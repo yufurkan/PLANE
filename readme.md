@@ -48,7 +48,7 @@ Despite the constraints, the tool successfully implements advanced engineering c
 
 The project logic is modularized for version control:
 
-* **`App_Main.bas`**: The entry point and main execution loop. Handles the workflow logic.
+* **`Main.bas`**: The entry point and main execution loop. Handles the workflow logic.
 * **`Core_Geometry.bas`**: The mathematical heart of the project. Contains `Ray Casting`, `Intersection`, and `Shape Cutting` algorithms.
 * **`Manager_Spatial.bas`**: Handles coordinate systems, axis definitions, and piece identification.
 * **`Validation.bas`**: Regex-based validation for user input functions.
