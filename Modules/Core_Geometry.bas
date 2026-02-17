@@ -586,46 +586,72 @@ End Function
 
 ' --- Selection Exception Functions ---
 
-Public Function ExceptionCheck(piece As Collection, shape As Collection) As Boolean
-
-    Dim pt1 As Nokta
-    Dim pt2 As Nokta
-    Dim i As Integer
-    Dim j As Integer
-    Dim h As Integer
-
-    For i = 1 To shape.Count
-        For j = 1 To shape(i).Count
-
-            Set pt1 = shape(i)(j)
- 
-            If j = shape(i).Count Then
-                Set pt2 = shape(i)(1)
-            Else
-                Set pt2 = shape(i)(j + 1)
-            End If
-
-            For h = 1 To piece.Count - 1
-                Dim kesisim As Nokta
-                Set kesisim = New Nokta
-                
-                
-                Set kesisim = KesisimBul(pt1, pt2, piece(h))
-                
-                ' Eğer kesişim varsa ve kesişim noktası yüzeyde ise
-                If Not kesisim Is Nothing Then
-                    If PointInPolygon3D(kesisim, shape(i)) Then
-                        ExceptionCheck = True ' Kesişim bulundu
-                        Exit Function
-                    End If
-                End If
-            Next h
-        Next j
-    Next i
+Public Function ExceptionCheck(piece As Collection, obstacleShape As Collection) As Boolean
+    ' piece: Kontrol edilen parça (Collection of Points)
+    ' obstacleShape: Yasaklı bölge/Diğer şekil (Collection of Points/Faces)
     
-    ' Eğer hiçbir kesişim bulunmazsa False döndür
+    Dim k As Integer
+    
+    ' 1. NOKTA KONTROLÜ: Parçanın herhangi bir noktası yasaklı şeklin içinde mi?
+    For k = 1 To piece.Count
+        ' InsideCheck fonksiyonu zaten şeklin tamamını (obstacleShape) ve noktayı alıp bakıyor
+        ' Type Kontrolü: obstacleShape (Collection) - piece(k) (Nokta) -> UYUMLU ✅
+        If InsideCheck(obstacleShape, piece(k)) Then
+            ExceptionCheck = True ' Hata! Nokta yasaklı bölgede.
+            Exit Function
+        End If
+    Next k
+
+    ' Not: Kenar kesişim kontrolü (Edge Intersection) ilerde buraya eklenebilir.
+    ' Şu anki haliyle "Point-in-Polygon" mantığıyla çalışır.
+    
     ExceptionCheck = False
 End Function
+
+'-------- Burayı iptal ettim ----------
+
+' Public Function ExceptionCheck(piece As Collection, shape As Collection) As Boolean
+
+'     Dim pt1 As Nokta
+'     Dim pt2 As Nokta
+'     Dim i As Integer
+'     Dim j As Integer
+'     Dim h As Integer
+
+'     For i = 1 To shape.Count
+'         For j = 1 To shape(i).Count
+
+'             Set pt1 = shape(i)(j)
+ 
+'             If j = shape(i).Count Then
+'                 Set pt2 = shape(i)(1)
+'             Else
+'                 Set pt2 = shape(i)(j + 1)
+'             End If
+
+'             For h = 1 To piece.Count - 1
+'                 Dim kesisim As Nokta
+'                 Set kesisim = New Nokta
+                
+                
+'                 Set kesisim = KesisimBul(pt1, pt2, piece(h))
+                
+'                 ' Eğer kesişim varsa ve kesişim noktası yüzeyde ise
+'                 If Not kesisim Is Nothing Then
+'                     If PointInPolygon3D(kesisim, shape(i)) Then
+'                         ExceptionCheck = True ' Kesişim bulundu
+'                         Exit Function
+'                     End If
+'                 End If
+'             Next h
+'         Next j
+'     Next i
+    
+'     ' Eğer hiçbir kesişim bulunmazsa False döndür
+'     ExceptionCheck = False
+' End Function
+
+    '-------- İptal Bitiş ----------
 
 ' --- Helper Math Functions (from XYZ) ---
 ' Bu fonksiyonlar intersectPoint ve diğerlerinde kullanıldığı için burada olmalı
@@ -646,4 +672,28 @@ Public Function Max(a As Double, b As Double) As Double
     Else
         Max = b
     End If
+End Function
+
+
+    ' --- Collision Manager Function (Main içindeki çağrı yaptığım yer) ---
+Public Function CheckCollisionForPiece(piece As Collection, shapes As Collection, currentShapeIndex As Integer) As Boolean
+    Dim shk As Integer
+    
+    ' Tüm şekilleri gez
+    For shk = 1 To shapes.Count
+        ' Kendi kendine çarpmasını engelle (currentShapeIndex = s)
+        If shk <> currentShapeIndex Then
+            
+            ' shapes(shk) -> Diğer şeklin tamamı (Collection) gönderiliyor
+            ' ExceptionCheck artık (Collection, Collection) kabul ediyor
+            If ExceptionCheck(piece, shapes(shk)) Then
+                CheckCollisionForPiece = True ' Çakışma VAR
+                Exit Function
+            End If
+            
+        End If
+    Next shk
+    
+    ' Hiçbir çakışma yoksa
+    CheckCollisionForPiece = False
 End Function
