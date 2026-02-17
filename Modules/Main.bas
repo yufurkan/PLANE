@@ -229,19 +229,12 @@ Dim chaptercount As Integer
             grY = ws.Cells(p, gYp).value
             grZ = ws.Cells(p, gZp).value
             
-            'burayı ilerde fonksiyona al---
-            Dim dd As Integer
-            For shk = 1 To shapes.Count
-                For dd = 1 To shapes(shk).Count
-                    Dim nn As New Nokta
-                    nn.x = shapes(shk)(dd).x
-                    nn.y = shapes(shk)(dd).y
-                    nn.z = shapes(shk)(dd).z
-                    If ExceptionCheck(piece, nn) Then 'Hata nokta yerine kenar kontrolü yapılmalı!
-                        intercont = False
-                    End If
-                Next dd
-            Next shk
+            'Güncelleme: Tamamlandı (Eski: burayı ilerde fonksiyona al)-------------
+            If CheckCollisionForPiece(piece, shapes, s) Then
+                intercont = False 'Çakışma var, bu parçayı iptal et
+            Else
+                intercont = True  'Çakışma yok, hesaplamaya devam et
+            End If
             '----------------------
             
             
